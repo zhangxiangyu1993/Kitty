@@ -21,14 +21,14 @@ public class Crawler
     {
         Login login = new Login(cookies, conn, USER_AGENT);
 
-        // ´ò¿ªcookies
+        // æ‰“å¼€ cookies
         CookieHandler.setDefault(new CookieManager(null,
                 CookiePolicy.ACCEPT_ALL));
 
-        // ÉèÖÃµÇÂ¼²ÎÊı
-        String post_params = "remember_me=true&password=99912345yy&email=jmy5945hh@163.com";
+        // ç™»é™†å‚æ•°
+        String post_params = "remember_me=true&password=***&email=jmy5945hh@163.com";
         String login_url = "https://www.zhihu.com/login/email";
-        // µÇÂ¼
+        // æ£€æŸ¥æ˜¯å¦ç™»é™†æˆåŠŸ
         boolean is_login = login.SendPost(login_url, post_params);
         if (is_login)
             System.out.println("\nLogin Succeed!");
