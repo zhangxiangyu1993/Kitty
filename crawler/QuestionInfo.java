@@ -35,7 +35,7 @@ public class QuestionInfo
         url = _url;
     }
     
-    // ·ÃÎÊÎÊÌâÍøÒ³£¬»ñÈ¡ÍøÒ³Ô­Ê¼ÄÚÈİ
+    // è¿æ¥
     public boolean ConnectUrl() throws Exception
     {
         if (Pattern.matches("(http|https)://www.zhihu.com/question/\\d{8}", url))
@@ -50,7 +50,7 @@ public class QuestionInfo
             return false;
     }
     
-    // »ñÈ¡ÎÊÌâ±êÌâ
+    // è·å–é—®é¢˜æ ‡é¢˜
     public String GetQuestionTitle()
     {
         String title = "";
@@ -58,7 +58,7 @@ public class QuestionInfo
         return title;
     }
     
-    // »ñÈ¡ÎÊÌâ¾ßÌåÄÚÈİ
+    // è·å–é—®é¢˜è¯¦ç»†å†…å®¹
     public String GetQuestionDetail()
     {
         String detail = "";
@@ -66,7 +66,7 @@ public class QuestionInfo
         return detail;
     }
     
-    // »ñÈ¡ÎÊÌâ¹Ø×¢ÈËÊı
+    // è·å–å…³æ³¨è€…æ•°é‡
     public int GetFollowersNum()
     {
         int num = 0;
@@ -74,7 +74,7 @@ public class QuestionInfo
         return num;
     }
     
-    // »ñÈ¡ÎÊÌâËùÊôtopic
+    // è·å–é—®é¢˜ä¸»é¢˜
     public String[] GetTopics()
     {
         String[] topics = null;
@@ -82,7 +82,7 @@ public class QuestionInfo
         return topics;
     }
     
-    // »ñÈ¡ÎÊÌâÏÂËùÓĞ´ğ°¸ĞÅÏ¢
+    // è·å–æ‰€æœ‰ç­”æ¡ˆ
     public void GetAllAnswers() throws Exception
     {
         int t_ans_num = GetAnswerNum();
@@ -100,7 +100,7 @@ public class QuestionInfo
         {
             if (i == 0)
             {
-                // »ñÈ¡ËùÓĞ´ğ°¸²¢±éÀú
+                // ï¿½ï¿½È¡ï¿½ï¿½ï¿½Ğ´ğ°¸²ï¿½ï¿½ï¿½ï¿½ï¿½
                 Elements elements = document.select("div.zm-item-answer.zm-item-expanded");
                 for (Element element2 : elements)
                 {
@@ -144,7 +144,7 @@ public class QuestionInfo
                 
                 if (responseCode != 200)
                 {
-                    System.out.println("·­Ò³³ö´í");
+                    System.out.println("ï¿½ï¿½Ò³ï¿½ï¿½ï¿½ï¿½");
                     continue;
                 }
                 
@@ -177,10 +177,9 @@ public class QuestionInfo
         }
     }
     
-    // ¸ù¾İ´ğ°¸µÄelement½øĞĞÄ£°å½âÎö
+    // æ ¹æ®elementè·å–ç­”æ¡ˆå†…å®¹
     private String GetAnswerByElement(Element element, boolean _unicode) throws Exception
     {
-        // »ñÈ¡»Ø´ğÕßĞÅÏ¢
         Element ele = element.getElementsByClass("author-link").first();
         String author_link = "";
         String author_name = "Anonymous";
@@ -208,11 +207,9 @@ public class QuestionInfo
             }
         }
         
-        // »ñÈ¡µãÔŞÊı
         ele = element.getElementsByClass("zm-item-vote-info").first();
         String vote_num = ele.attr("data-votecount");
         
-        // »ñÈ¡»Ø´ğÄÚÈİ
         ele = element.getElementsByClass("zm-editable-content").first();
         String ans_content = ele.text();
         if (_unicode)
@@ -233,13 +230,12 @@ public class QuestionInfo
             ans_content = ans_content.replace("\\", "");
         }
         
-        // ×éºÏĞÅÏ¢
-        String info = author_name + "(" + author_link + ")" + " ÔŞÍ¬Êı=" + vote_num + "\r\n" + ans_content + "\r\n\r\n";
+        String info = author_name + "(" + author_link + ")" + " ï¿½ï¿½Í¬ï¿½ï¿½=" + vote_num + "\r\n" + ans_content + "\r\n\r\n";
         
         return info;
     }
     
-    // Ğ´ÈëÎÄ¼ş
+    // å†™å…¥æ–‡ä»¶
     private void WriteToFile(String content) throws IOException
     {
         BufferedWriter out = new BufferedWriter(new FileWriter(writename, true));  
@@ -248,7 +244,7 @@ public class QuestionInfo
         out.close();
     }
     
-    // »ñÈ¡ÎÊÌâµÄ»Ø´ğÊıÁ¿
+    // è·å–ç­”æ¡ˆæ•°é‡
     public int GetAnswerNum()
     {
         Element element = document.getElementById("zh-question-answer-num");

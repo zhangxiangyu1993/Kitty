@@ -2,7 +2,7 @@ package crawler;
 
 public class TopicInfo
 {
-    // »ñÈ¡»°ÌâÃû³Æ
+    // è·å–è¯é¢˜åç§°
     public String TopicName()
     {
         String topic = "";
@@ -10,7 +10,7 @@ public class TopicInfo
         return topic;
     }
     
-    // »ñÈ¡»°Ìâ¹Ø×¢ÈËÊı
+    // è·å–å…³æ³¨è€…æ•°é‡
     public int GetFollowersNum()
     {
         int num = 0;
@@ -18,7 +18,7 @@ public class TopicInfo
         return num;
     }
     
-    // »ñÈ¡»°ÌâÃèÊö
+    // è·å–è¯é¢˜æè¿°
     public String GetTopicDesc()
     {
         String desc = "";
@@ -26,7 +26,7 @@ public class TopicInfo
         return desc;
     }
     
-    // »ñÈ¡¸¸»°Ìâ
+    // è·å–çˆ¶è¯é¢˜åç§°
     public String[] GetFatherTopics()
     {
         String[] topics = null;
@@ -34,7 +34,7 @@ public class TopicInfo
         return topics;
     }
     
-    // »ñÈ¡¸¸»°Ìâ
+    // è·å–å­è¯é¢˜åç§°
     public String[] GetSonTopics()
     {
         String[] topics = null;
@@ -42,25 +42,25 @@ public class TopicInfo
         return topics;
     }
     
-    // °´ÈÈÃÅÅÅĞò»ñÈ¡ÎÊÌâ
+    // è·å–çƒ­é—¨é—®é¢˜
     public void GetHotQuestions(int n)
     {
         
     }
     
-    // °´Ê±¼äÅÅĞò»ñÈ¡ÎÊÌâ
+    // è·å–æœ€æ–°é—®é¢˜
     public void GetLatestQuestions(String time)
     {
         
     }
     
-    // »ñÈ¡¾«»ªÎÊÌâ
+    // è·å–ç²¾åé—®é¢˜
     public void GetTopQuestions()
     {
         
     }
     
-    // »ñÈ¡×î¼Ñ»Ø´ğÕßĞÅÏ¢
+    // è·å–è¯é¢˜å…³é”®äººç‰©
     public UserInfo[] GetKeyPerson()
     {
         UserInfo[] users = null;

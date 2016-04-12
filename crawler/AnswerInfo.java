@@ -9,7 +9,7 @@ public class AnswerInfo
         answer_url = _url;
     }
     
-    // ½«»Ø´ğÕß¡¢´ğ°¸¡¢ÔŞÍ¬Êı¡¢ÔŞÍ¬Õß×é×°ÆğÀ´£¬·µ»ØÕûÌåstring
+    // è·å–ç”¨æˆ·æ‰€æœ‰ä¿¡æ¯ï¼Œç»„åˆä¸ºä¸€ä¸ªstring
     public String GetAllInfo()
     {
         UserInfo user = GetAuthor();
@@ -22,7 +22,7 @@ public class AnswerInfo
         return all_info;
     }
     
-    // »ñÈ¡»Ø´ğÕßĞÅÏ¢£¬·µ»ØÒ»¸öUserInfoÊµÀı
+    // è·å–ç”¨æˆ·ä¿¡æ¯
     public UserInfo GetAuthor()
     {
         UserInfo user = null;
@@ -30,7 +30,7 @@ public class AnswerInfo
         return user;
     }
     
-    // »ñÈ¡»Ø´ğÄÚÈİ
+    // è·å–ç­”æ¡ˆå†…å®¹
     public String GetConent()
     {
         String content = "";
@@ -38,7 +38,7 @@ public class AnswerInfo
         return content;
     }
     
-    // »ñÈ¡ÔŞÍ¬Êı
+    // è·å–è¢«èµåŒæ•°é‡
     public int GetUpvoteNum()
     {
         int upvote = 0;
@@ -46,7 +46,7 @@ public class AnswerInfo
         return upvote;
     }
     
-    // »ñÈ¡µãÔŞÓÃ»§ĞÅÏ¢
+    // è·å–èµåŒè€…ä¿¡æ¯
     public UserInfo[] GetUpvoters()
     {
         UserInfo[] users = null;

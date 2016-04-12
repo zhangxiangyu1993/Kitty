@@ -2,7 +2,7 @@ package crawler;
 
 public class UserInfo
 {
-    // ËùÓĞº¯Êı×¢ÒâÄäÃûÓÃ»§µÄ´¦Àí
+    // ç”¨æˆ·åŸºæœ¬ä¿¡æ¯
     private String user_name;
     private String user_url;
     
@@ -22,7 +22,7 @@ public class UserInfo
         return user_url;
     }
     
-    // »ñÈ¡ÓÃ»§±»ÔŞÍ¬µÄ´ÎÊı
+    // è·å–è¢«èµåŒæ¬¡æ•°
     public int GetAgreeNum()
     {
         int agree_num = 0;
@@ -30,7 +30,7 @@ public class UserInfo
         return agree_num;
     }
     
-    // »ñÈ¡ÓÃ»§±»¸ĞĞ»µÄ´ÎÊı
+    // è·å–è¢«æ„Ÿè°¢æ¬¡æ•°
     public int GetThankNum()
     {
         int thank_num = 0;
@@ -38,7 +38,7 @@ public class UserInfo
         return thank_num;
     }
     
-    // »ñÈ¡ĞÔ±ğ
+    // è·å–æ€§åˆ«
     public int GetGender()
     {
         int gender = 0;
@@ -46,7 +46,7 @@ public class UserInfo
         return gender;
     }
     
-    // »ñÈ¡»Ø´ğÊı
+    // è·å–å›ç­”æ•°é‡
     public int GetAnswerNum()
     {
         int ans_num = 0;
@@ -54,7 +54,7 @@ public class UserInfo
         return ans_num;
     }
     
-    // »ñÈ¡ËùÓĞ»Ø´ğÁ´½Ó
+    // è·å–å›ç­”çš„url
     public String[] GetAllAnswerUrls()
     {
         String[] urls = null;
@@ -62,7 +62,7 @@ public class UserInfo
         return urls;
     }
     
-    // »ñÈ¡ÌáÎÊÊı
+    // è·å–æé—®æ•°é‡
     public int GetAskNum()
     {
         int ask_num = 0;
@@ -70,7 +70,7 @@ public class UserInfo
         return ask_num;
     }
     
-    // »ñÈ¡ËùÓĞÌáÎÊÁ´½Ó
+    // è·å–æé—®url
     public String[] GetAllAskUrls()
     {
         String[] urls = null;
@@ -78,7 +78,7 @@ public class UserInfo
         return urls;
     }
     
-    // »ñÈ¡·ÛË¿Êı
+    // è·å–å…³æ³¨è€…æ•°é‡
     public int GetFollowerNum()
     {
         int follower_num = 0;
@@ -86,7 +86,7 @@ public class UserInfo
         return follower_num;
     }
     
-    // »ñÈ¡·ÛË¿ÓÃ»§ĞÅÏ¢
+    // è·å–å…³æ³¨è€…ä¿¡æ¯
     public UserInfo[] GetFollowersInfo()
     {
         UserInfo[] followers = null;
@@ -94,7 +94,7 @@ public class UserInfo
         return followers;
     }
     
-    // »ñÈ¡¹Ø×¢Êı
+    // è·å–å…³æ³¨æ•°é‡
     public int GetFollowNum()
     {
         int follow_num = 0;
@@ -102,7 +102,7 @@ public class UserInfo
         return follow_num;
     }
     
-    // »ñÈ¡¹Ø×¢ÓÃ»§ĞÅÏ¢
+    // è·å–è¢«å…³æ³¨è€…ä¿¡æ¯
     public UserInfo[] GetFollowsInfo()
     {
         UserInfo[] follows = null;

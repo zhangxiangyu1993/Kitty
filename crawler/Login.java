@@ -19,7 +19,7 @@ public class Login
         USER_AGENT = _USER_AGENT;
     }
     
-    // 提交POST表单完成登录
+    // POST鐧诲綍淇℃伅
     public boolean SendPost(String url, String post_params) throws Exception
     {
         URL obj = new URL(url);
@@ -45,7 +45,7 @@ public class Login
         if (responseCode != 200)
             return false;
         
-        // 获取cookies
+        // 鑾峰彇cookies
         cookies = conn.getHeaderFields().get("Set-Cookie");
         
         return true;
