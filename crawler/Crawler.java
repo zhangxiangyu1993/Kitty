@@ -26,8 +26,8 @@ public class Crawler
                 CookiePolicy.ACCEPT_ALL));
 
         // 登陆参数
-        String post_params = "remember_me=true&password=***&email=jmy5945hh@163.com";
-        String login_url = "https://www.zhihu.com/login/email";
+        String post_params = "password=speaknow1993&phone_num=15198008812&_xsrf=b0aeaa2d2eb7f5eb628ca130fc647bfa";
+        String login_url = "https://www.zhihu.com/login/phone_num";
         // 检查是否登陆成功
         boolean is_login = login.SendPost(login_url, post_params);
         if (is_login)
