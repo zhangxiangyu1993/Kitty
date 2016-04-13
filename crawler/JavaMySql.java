@@ -4,31 +4,37 @@ public class JavaMySql {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		  //Çı¶¯³ÌĞòÃû//²»¹Ì¶¨£¬¸ù¾İÇı¶¯
+		  //é©±åŠ¨ç¨‹åºå//ä¸å›ºå®šï¼Œæ ¹æ®é©±åŠ¨
 		  String driver = "com.mysql.jdbc.Driver";
-		  // URLÖ¸ÏòÒª·ÃÎÊµÄÊı¾İ¿âÃû******
+		  // URLæŒ‡å‘è¦è®¿é—®çš„æ•°æ®åº“å******
 		  String url = "jdbc:mysql://localhost/******";
-		  // MySQLÅäÖÃÊ±µÄÓÃ»§Ãû
+		  // MySQLé…ç½®æ—¶çš„ç”¨æˆ·å
 		  String user = "root";
-		  // JavaÁ¬½ÓMySQLÅäÖÃÊ±µÄÃÜÂë******
+		  // Javaè¿æ¥MySQLé…ç½®æ—¶çš„å¯†ç ******
 		  String password = "******";
 		  
 		  try {
-		  // ¼ÓÔØÇı¶¯³ÌĞò
+		  // åŠ è½½é©±åŠ¨ç¨‹åº
 		  Class.forName(driver);
 		  
-		  // Á¬ĞøÊı¾İ¿â
+		  // è¿ç»­æ•°æ®åº“
 		  Connection conn = DriverManager.getConnection(url, user, password);
 		  if(!conn.isClosed())
 		   System.out.println("Succeeded connecting to the Database!");
 		  
-		  // statementÓÃÀ´Ö´ĞĞSQLÓï¾ä
+		  // statementç”¨æ¥æ‰§è¡ŒSQLè¯­å¥
 		  Statement statement = conn.createStatement();
-		  // ÒªÖ´ĞĞµÄSQLÓï¾äidºÍcontentÊÇ±íreviewÖĞµÄÏî¡£
+		  // è¦æ‰§è¡Œçš„SQLè¯­å¥idå’Œcontentæ˜¯è¡¨reviewä¸­çš„é¡¹ã€‚
 		  String sql = "select DISTINCT id ,content from review ";
 		  ResultSet rs = statement.executeQuery(sql);  
-		  
-		  //Êä³öidÖµºÍcontentÖµ
+
+//          sql="insert into student values(2014218,'ææœˆ','å¥³')";
+//          stmt.execute(sql); 
+//          sql="select * from student";  
+//          rs = stmt.executeQuery(sql);    
+//          System.out.println("å­¦å·" + "\t\t\t" + " å§“å"+"\t\t\t"+"æ€§åˆ«");   
+//          String name = null;    		  
+		  //è¾“å‡ºidå€¼å’Œcontentå€¼
 		  while(rs.next()) {
 		   System.out.println(rs.getString("id") + "\t" + rs.getString("content")); 
 		   } 
