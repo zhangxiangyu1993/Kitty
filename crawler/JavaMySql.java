@@ -1,54 +1,67 @@
 package crawler;
 import java.sql.*;
 public class JavaMySql {
+	private String driver = "com.mysql.jdbc.Driver";
+	private String url = "jdbc:mysql://localhost/";
+	private String user = "root";
+	private String password = null;
+	private static Connection conn;
+	
+	public JavaMySql(String database, String username, String password) throws SQLException {
+		// TODO Auto-generated constructor stub
+		url += database;
+		user = username;
+		this.password = password;
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		  //驱动程序名//不固定，根据驱动
-		  String driver = "com.mysql.jdbc.Driver";
-		  // URL指向要访问的数据库名******
-		  String url = "jdbc:mysql://localhost/******";
-		  // MySQL配置时的用户名
-		  String user = "root";
-		  // Java连接MySQL配置时的密码******
-		  String password = "******";
-		  
 		  try {
 		  // 加载驱动程序
 		  Class.forName(driver);
 		  
-		  // 连续数据库
-		  Connection conn = DriverManager.getConnection(url, user, password);
+		  // 连接数据库
+		  conn = DriverManager.getConnection(url, user, password);
 		  if(!conn.isClosed())
 		   System.out.println("Succeeded connecting to the Database!");
+		  }catch(ClassNotFoundException e) {  
+			   System.out.println("Sorry,can`t find the Driver!");  
+			   e.printStackTrace();  
+		  }
+	}
+	
+	
+	
+	
+
+	public void AddElementToTable (String tablename, String value) {	  
+		  try {
 		  
 		  // statement用来执行SQL语句
 		  Statement statement = conn.createStatement();
-		  // 要执行的SQL语句id和content是表review中的项。
-		  String sql = "select DISTINCT id ,content from review ";
-		  ResultSet rs = statement.executeQuery(sql);  
 
-//          sql="insert into student values(2014218,'李月','女')";
-//          stmt.execute(sql); 
-//          sql="select * from student";  
-//          rs = stmt.executeQuery(sql);    
-//          System.out.println("学号" + "\t\t\t" + " 姓名"+"\t\t\t"+"性别");   
-//          String name = null;    		  
-		  //输出id值和content值
-		  while(rs.next()) {
-		   System.out.println(rs.getString("id") + "\t" + rs.getString("content")); 
-		   } 
+		  String sql = "INSERT INTO " + tablename  + " values " +
+				  "(" + value + ")";
+		  statement.executeUpdate(sql);
+		  System.out.println("add data successfully!");
 		  
-		  rs.close(); 
-		  conn.close();  
-		  } catch(ClassNotFoundException e) {  
-		   System.out.println("Sorry,can`t find the Driver!");  
-		   e.printStackTrace();  
-		  } catch(SQLException e) {
-		   e.printStackTrace();
+		  //输出id值和content值
+
 		  } catch(Exception e){
 		   e.printStackTrace();
 		  }
+	}
+	
+	public void ShowTable(String tablename) throws SQLException {
+		Statement statement = conn.createStatement();
+		String sql = "select * from " + tablename;
+		ResultSet rs = statement.executeQuery(sql);
+	
+		System.out.println("TABLE:" + tablename);
+		System.out.println("user_Id" + "\t" + " user_name"+ "\t" + "user_link" + "\t" + "followee_num" + "\t" + "follower_num");
+		while(rs.next()) {
+			System.out.println(rs.getString(1) + "\t" + rs.getString(2) + "\t" +
+		rs.getString(3) + "\t" + rs.getString(4) + "\t" + rs.getString(5)); 
+		} 
+		rs.close(); 
+	
 	}
 
 }
