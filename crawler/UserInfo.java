@@ -1,17 +1,67 @@
 package crawler;
 
+
+import java.sql.SQLException;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.print.attribute.DocAttribute;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 public class UserInfo
 {
     // 用户基本信息
     private String user_name;
     private String user_url;
+    private String user_Id;
+    private String followee_num;
+    private String follower_num;
+    public static HttpsURLConnection conn;
     
-    public UserInfo(String _user_name, String _user_url)
+ 
+    
+    public UserInfo(String _user_name, String _user_url, HttpsURLConnection conn)
     {
         user_name = _user_name;
         user_url = _user_url;
+        this.conn = conn;
     }
     
+    public void SerAllInfo() throws Exception {
+ 		String html = Crawler.GetPageContent(user_url, conn);
+ 		Document document = Jsoup.parse(html);
+ 		Element element = document.select("div.title-section.ellipsis").first().getElementsByClass("name").first();
+ 		user_name = element.text();
+ 		System.out.println(user_name);
+ 		
+ 		element = document.select("button.zg-btn.zg-btn-follow.zm-rich-follow-btn").first();
+ 		user_Id = element.attr("data-id");
+ 		System.out.println(user_Id);
+ 		
+ 		element = document.getElementsByAttributeValue("href", "/people/rosecrimson/followees").first().getElementsByTag("strong").first();
+ 		followee_num = element.text();
+ 		System.out.println(followee_num);
+ 		
+ 		element = document.getElementsByAttributeValue("href", "/people/rosecrimson/followers").first().getElementsByTag("strong").first();
+ 		follower_num = element.text();
+ 		System.out.println(follower_num);
+		
+ 	}
+    
+    public void AddInfoToDB() throws SQLException{
+    	JavaMySql jMySql = new JavaMySql("mybase", "root", "930727");
+    	
+//    	String columnname = "user_Id" + ","  + "user_name"+ ","  + "user_link" + "," + "followee_num"
+//    			+ "follower_num";
+    	String value = "'" + user_Id + "'" + ","  + "'" + user_name + "'" + "," + "'" + user_url + "'" + "," + "'" + followee_num + "'" + "," + "'" + follower_num + "'";
+    	System.out.println(value);
+    	
+    	jMySql.AddElementToTable("usersinfo", value);
+    	jMySql.ShowTable("usersinfo");
+    }
+    
+  
     public String GetUserName()
     {
         return user_name;
@@ -110,3 +160,4 @@ public class UserInfo
         return follows;
     }
 }
+
