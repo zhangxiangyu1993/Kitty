@@ -17,6 +17,12 @@ import java.util.Scanner;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+
+import com.sun.org.apache.bcel.internal.classfile.Code;
+
 public class Login
 {
     private List<String> cookies;
@@ -30,22 +36,29 @@ public class Login
         USER_AGENT = _USER_AGENT;
     }
     
+    // 获取验证码图片，并且调用windows图片查看器显示，由用户识别输入
     public String GetCaptcha() throws Exception
     {
-        String url = "https://www.zhihu.com/captcha.gif";
+        String url = "https://www.zhihu.com/captcha.gif?r=1461832441369&type=login";
         
+        // 由于存储图片需要二进制，因此此处单独实现一个连接方法，不调用Crawler.GetPageContent
         URL obj = new URL(url);
         conn = (HttpsURLConnection) obj.openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("User-Agent", USER_AGENT);
 
-        int res_code = conn.getResponseCode();
-        System.out.println("\nGET:" + url + ":" + res_code);
+        int code = conn.getResponseCode();
+        System.out.println("\nGET:" + url + ":" + code);
+        if (code != 200)
+        {
+            System.out.println("Get Captcha Failed!\n");
+            return "";
+        }
         
-        DataInputStream in = new DataInputStream(conn.getInputStream());
-
+        // 按byte读取验证码图片信息
         byte[] bytes = new byte[1024];
         byte[] content = new byte[65536];
+        DataInputStream in = new DataInputStream(conn.getInputStream());
         int i = in.read(bytes);
         int j = 0;
         while (i > 0)
@@ -58,52 +71,67 @@ public class Login
             j += i;
             i = in.read(bytes);
         }
-        
+        in.close();
 
+        // 按byte写入图片信息到本地文件
         File file = new File("c:\\captcha.gif");
         if (file.exists())
-        {
             System.out.println(file.delete());
-        }
         file.createNewFile();
         
         DataOutputStream out = new DataOutputStream(new FileOutputStream(file));
-        
         for (int j2 = 0; j2 < j; j2++)
         {
             out.writeByte(content[j2]);
             out.flush();
         }     
         out.close();
-        
+
+        // 调用windows图片查看器打开图片
         Runtime.getRuntime().exec("rundll32 c:\\Windows\\System32\\shimgvw.dll,ImageView_Fullscreen c:\\captcha.gif");
         
+        // 手动输入验证码
         System.out.print("请输入验证码：");
         Scanner scan = new Scanner(System.in);
-        String code = scan.nextLine();
+        String codes = scan.nextLine();
+        scan.close();
 
-        return code;
+        return codes;
     }
     
+    // 获取与验证码对应的隐藏校验码xsrf
     public String GetXSRF() throws Exception
     {
         String url = "https://www.zhihu.com/";
+        String content = Crawler.GetPageContent(url, conn);
+        int code = conn.getResponseCode();
+        if (code != 200)
+        {
+            System.out.println("Get XSRF Failed!\n");
+            return "";
+        }
+            
+        Document doc = Jsoup.parse(content);
         
-        URL obj = new URL(url);
-        conn = (HttpsURLConnection) obj.openConnection();
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("User-Agent", USER_AGENT);
+        Elements eles = doc.getElementsByAttributeValue("name", "_xsrf");
         
-        return url;
+        if (eles.size() > 0)
+        {
+            return eles.first().attr("value");
+        }
+        
+        return "";
     }
     
     // POST登录信息
-    public boolean SendPost(String url, String post_params) throws Exception
+    public int SendPost(String url, String post_params) throws Exception
     {
-        String code = GetCaptcha();
+        // 组装post参数
+        post_params += ("&_xsrf=" + GetXSRF());
+        post_params += ("&captcha=" + GetCaptcha());
+
         URL obj = new URL(url);
         conn = (HttpsURLConnection)obj.openConnection();
-        
         conn.setUseCaches(false);
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Host", "www.zhihu.com");
@@ -112,31 +140,23 @@ public class Login
         conn.setRequestProperty("Origin", "http://www.zhihu.com");
         conn.setInstanceFollowRedirects(false);
         conn.setDoOutput(true);
-        
-        // Send post request
         DataOutputStream wr = new DataOutputStream(conn.getOutputStream());
         wr.writeBytes(post_params);wr.flush();wr.close();
 
         int responseCode = conn.getResponseCode();
-        System.out.println("\nSending 'POST' request to URL : " + url);
-        System.out.println("Response Code : " + responseCode);
-
-        if (responseCode != 200)
-            return false;
+        System.out.println("\nPOST:" + url + ":" + responseCode);
         
+        // 验证网页，可以根据返回状态码确认是否登陆成功
         String check_url = "https://www.zhihu.com/settings/profile";
-        
         Crawler.GetPageContent(check_url, conn);
+        return conn.getResponseCode();
         
-        // 获取cookies
-        cookies = conn.getHeaderFields().get("Set-Cookie");
-        
-        return true;
+//      获取cookies
+//        cookies = conn.getHeaderFields().get("Set-Cookie");
     }
     
     public List<String> GetCookies()
     {
         return cookies;
     }
-
 }
