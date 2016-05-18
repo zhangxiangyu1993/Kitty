@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,13 +27,16 @@ public class QuestionInfo
     private String url;
     private String html;
     private File writename;
+    private File participatingusers;
     private Document document;
 
-    public QuestionInfo(List<String> _cookies, HttpsURLConnection _conn, String _USER_AGENT, String _url) throws IOException
+    public QuestionInfo(List<String> _cookies, HttpsURLConnection _conn, String _USER_AGENT, String _url) throws Exception
     {
         conn = _conn;
         USER_AGENT = _USER_AGENT;
         url = _url;
+        
+        ConnectUrl();
     }
     
     // 连接
@@ -42,7 +46,9 @@ public class QuestionInfo
         {
             html = Crawler.GetPageContent(url, conn);
             writename = new File(".\\123.txt");
+            participatingusers = new File(".\\participatingusers.txt");
             writename.createNewFile();
+            participatingusers.createNewFile();
             document = Jsoup.parse(html);
             return true;
         }
@@ -66,12 +72,104 @@ public class QuestionInfo
         return detail;
     }
     
-    // 获取关注者数量
-    public int GetFollowersNum()
+    // 获取关注者数量与名单
+    public int GetFollowersNum() throws Exception
     {
-        int num = 0;
+
+        Element element = document.getElementsByAttributeValue("class", "zg-gray-normal").first();
+        String followerListUrl = "https://www.zhihu.com" + element.getElementsByTag("a").first().attr("href");
         
-        return num;
+        int followerNum = Integer.parseInt(element.getElementsByTag("strong").first().text());
+        BufferedWriter out = new BufferedWriter(new FileWriter(participatingusers)); 
+        
+		if (followerNum == 0)
+        {
+            System.out.println("No Follower!");
+            return 0;
+        }
+		String _xsrf = "";
+		Document document = Jsoup.parse(Crawler.GetPageContent(followerListUrl, conn));
+		int pageNum = (followerNum - 1) / 20 + 1;
+		for (int i = 0; i < pageNum; i++) {
+			if (i == 0) {
+		           Elements elements = document.select("div.zm-profile-card.zm-profile-section-item.zg-clear.no-hovercard");
+	                for (Element element2 : elements)
+	                {
+	                    String url = element2.getElementsByTag("a").first().attr("href");
+	                    System.out.println(url);
+	                    out.write(url);
+	                    out.newLine();
+	                         
+	                }
+	                
+	                Element ele = document.getElementsByTag("input").last();
+	                _xsrf = ele.attr("value");				
+			}else{
+				
+				 String post_url = "https://www.zhihu.com/node/ProfileFollowersListV2";
+	                
+	                int offset = i * 20;
+	                
+	                URL obj = new URL(post_url);
+	                conn = (HttpsURLConnection)obj.openConnection();
+	                
+	                conn.setUseCaches(false);
+	                conn.setRequestMethod("POST");
+	                conn.setRequestProperty("Host", "www.zhihu.com");
+	                conn.setRequestProperty("User-Agent", USER_AGENT);
+	                conn.setRequestProperty("Referer", followerListUrl);
+	                conn.setInstanceFollowRedirects(false);
+	                conn.setDoOutput(true);
+	                
+	                String params = "{\"offset\":" + offset +",\"order_by\":\"created\",\"hash_id\":\"64281025b4d733997d155676b9270d5a\"}";
+	                String post_params = "method=next&params="+params + "&_xsrf="+_xsrf;
+	                
+	                // Send post request
+	                DataOutputStream wr = new DataOutputStream(conn.getOutputStream());
+	                wr.writeBytes(post_params);wr.flush();wr.close();
+
+	                int responseCode = conn.getResponseCode();
+	                System.out.println("\nSending 'POST' request to URL : " + post_url);
+	                System.out.println("Response Code : " + responseCode);
+	                
+	                if (responseCode != 200)
+	                {
+	                    System.out.println("获取更多信息失败！");
+	                    continue;
+	                }
+	                
+	                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"));
+	                String line;
+	                StringBuffer response = new StringBuffer();
+	                
+	                while ((line = in.readLine()) != null)
+	                {
+	                    response.append(line);
+	                }
+	                
+	                in.close();
+	                
+	                String content = response.toString().substring(17, response.toString().length()-3);
+	                content = content.replace("\\\"", "\"");
+	                content = content.replace("\\n", " ");
+	                content = content.replace("\\/", "//");
+	                content = content.replace("//", "/");
+	                
+	                document = Jsoup.parse(content);
+	             
+	                Elements elements = document.select("div.zm-profile-card.zm-profile-section-item.zg-clear.no-hovercard");
+	                for (Element element2 : elements)
+	                {
+	                	String url = element2.getElementsByTag("a").first().attr("href");
+	                	System.out.println(url);
+	                	out.write(url);
+	                    out.newLine();
+	                }
+			}
+		}
+		out.flush();
+		out.close();
+        return followerNum;
     }
     
     // 获取问题主题
