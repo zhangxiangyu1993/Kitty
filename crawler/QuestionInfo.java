@@ -1,17 +1,12 @@
 package crawler;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.file.attribute.UserPrincipalLookupService;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -20,72 +15,55 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-public class QuestionInfo
+
+
+public class UserInfo
 {
-    private HttpsURLConnection conn;
-    private String USER_AGENT;
-    private String url;
-    private String html;
-    private File writename;
-    private File participatingusers;
-    private Document document;
-
-    public QuestionInfo(List<String> _cookies, HttpsURLConnection _conn, String _USER_AGENT, String _url) throws Exception
+	private List<String> cookies;
+	private String USER_AGENT;
+	private HttpsURLConnection conn;
+    // 用户基本信息
+    private String user_name;
+    private String user_url;
+    private String user_ID;
+	private String followerListUrl;
+	private String followeeListUrl;
+    private int followerNum;
+    private int followeeNum;
+    
+    public UserInfo(HttpsURLConnection conn2, List<String> cookies2, String userAgent, String _userUrl) throws Exception
     {
-        conn = _conn;
-        USER_AGENT = _USER_AGENT;
-        url = _url;
-        
-        ConnectUrl();
+        user_url = _userUrl;
+        conn = conn2;
+		cookies = cookies2;
+		USER_AGENT = userAgent;
+		
+		GetFollowInfo();
     }
     
-    // 连接
-    public boolean ConnectUrl() throws Exception
-    {
-        if (Pattern.matches("(http|https)://www.zhihu.com/question/\\d{8}", url))
-        {
-            html = Crawler.GetPageContent(url, conn);
-            writename = new File(".\\123.txt");
-            participatingusers = new File(".\\participatingusers.txt");
-            writename.createNewFile();
-            participatingusers.createNewFile();
-            document = Jsoup.parse(html);
-            return true;
-        }
-        else
-            return false;
-    }
+    //获取关注和被关注的列表url和数量
+    void GetFollowInfo() throws Exception{
+		
+		Document document = Jsoup.parse(Crawler.GetPageContent(user_url, conn));
+		Element element = document.select("div.zm-profile-side-following.zg-clear").last();
+		String string = element.getElementsByTag("a").first().attr("href");
+		followeeListUrl = "https://www.zhihu.com" + string;
+		string = element.getElementsByTag("a").last().attr("href");
+		followerListUrl = "https://www.zhihu.com" + string;
+		
+		string = element.getElementsByTag("a").first().getElementsByTag("strong").first().text();
+  	    followeeNum = Integer.parseInt(string);
+  	    string = element.getElementsByTag("a").last().getElementsByTag("strong").first().text();
+  	    followerNum = Integer.parseInt(string);
+	}
     
-    // 获取问题标题
-    public String GetQuestionTitle()
-    {
-        String title = "";
-        
-        return title;
-    }
-    
-    // 获取问题详细内容
-    public String GetQuestionDetail()
-    {
-        String detail = "";
-        
-        return detail;
-    }
-    
-    // 获取关注者数量与名单
-    public int GetFollowersNum() throws Exception
-    {
-
-        Element element = document.getElementsByAttributeValue("class", "zg-gray-normal").first();
-        String followerListUrl = "https://www.zhihu.com" + element.getElementsByTag("a").first().attr("href");
-        
-        int followerNum = Integer.parseInt(element.getElementsByTag("strong").first().text());
-        BufferedWriter out = new BufferedWriter(new FileWriter(participatingusers)); 
-        
+  //获取关注者信息  
+    ArrayList<String > GetALLFollowersInfo() throws Exception{
+		ArrayList<String> followerList = new ArrayList<>();
 		if (followerNum == 0)
         {
             System.out.println("No Follower!");
-            return 0;
+            return followerList;
         }
 		String _xsrf = "";
 		Document document = Jsoup.parse(Crawler.GetPageContent(followerListUrl, conn));
@@ -97,9 +75,7 @@ public class QuestionInfo
 	                {
 	                    String url = element2.getElementsByTag("a").first().attr("href");
 	                    System.out.println(url);
-	                    out.write(url);
-	                    out.newLine();
-	                         
+	                    followerList.add(url);
 	                }
 	                
 	                Element ele = document.getElementsByTag("input").last();
@@ -162,190 +138,209 @@ public class QuestionInfo
 	                {
 	                	String url = element2.getElementsByTag("a").first().attr("href");
 	                	System.out.println(url);
-	                	out.write(url);
-	                    out.newLine();
+	                    followerList.add(url);
 	                }
 			}
 		}
-		out.flush();
-		out.close();
-        return followerNum;
-    }
-    
-    // 获取问题主题
-    public String[] GetTopics()
-    {
-        String[] topics = null;
-        
-        return topics;
-    }
-    
-    // 获取所有答案
-    public void GetAllAnswers() throws Exception
-    {
-        int t_ans_num = GetAnswerNum();
-        
-        if (t_ans_num == 0)
+		
+		return followerList;		
+	}
+	
+    //获取被关注者信息
+    ArrayList<String> GetALLFolloweesInfo() throws Exception{
+		ArrayList<String> followeeList = new ArrayList<>();
+		if (followeeNum == 0)
         {
-            System.out.println("No Answer!");
-            return;
+            System.out.println("No Followee!");
+            return followeeList;
         }
-        
-        int t_page_num = (t_ans_num-1) / 20 + 1;
-        String _xsrf = "";
-        
-        for (int i = 0; i < t_page_num; i++)
-        {
-            if (i == 0)
-            {
-                // ��ȡ���д𰸲�����
-                Elements elements = document.select("div.zm-item-answer.zm-item-expanded");
-                for (Element element2 : elements)
-                {
-                    String str = GetAnswerByElement(element2, false);
-                    WriteToFile(str);
-                }
-                
-                Element ele = document.getElementsByTag("input").last();
-                _xsrf = ele.attr("value");
-            }
-            else 
-            {
-                String post_url = "https://www.zhihu.com/node/QuestionAnswerListV2";
-                
-                
-                int offset = i * 20;
-                
-                URL obj = new URL(post_url);
-                conn = (HttpsURLConnection)obj.openConnection();
-                
-                conn.setUseCaches(false);
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Host", "www.zhihu.com");
-                conn.setRequestProperty("User-Agent", USER_AGENT);
-                conn.setRequestProperty("Referer", url);
-                conn.setInstanceFollowRedirects(false);
-                conn.setDoOutput(true);
-                
-                String[] url_split = url.split("/");
-                String question_code = url_split[url_split.length-1];
-                String params = "{\"url_token\":"+question_code+",\"pagesize\":20,\"offset\":"+offset+"}";
-                String post_params = "_xsrf="+_xsrf+"&method=next&params="+params;
-                
-                // Send post request
-                DataOutputStream wr = new DataOutputStream(conn.getOutputStream());
-                wr.writeBytes(post_params);wr.flush();wr.close();
+		String _xsrf = "";
+		Document document = Jsoup.parse(Crawler.GetPageContent(followeeListUrl, conn));
+		int pageNum = (followeeNum - 1) / 20 + 1;
+		for (int i = 0; i < pageNum; i++) {
+			if (i == 0) {
+		           Elements elements = document.select("div.zm-profile-card.zm-profile-section-item.zg-clear.no-hovercard");
+	                for (Element element2 : elements)
+	                {
+	                    String url = element2.getElementsByAttributeValue("class", "zm-list-content-title").first().getElementsByTag("a").first().attr("href"); 
+	                    followeeList.add(url);
+	                }
+	                
+	                Element ele = document.getElementsByTag("input").last();
+	                _xsrf = ele.attr("value");				
+			}else{
+				
+				 String post_url = "https://www.zhihu.com/node/ProfileFolloweesListV2";
+	                
+	                int offset = i * 20;
+	                
+	                URL obj = new URL(post_url);
+	                conn = (HttpsURLConnection)obj.openConnection();
+	                
+	                conn.setUseCaches(false);
+	                conn.setRequestMethod("POST");
+	                conn.setRequestProperty("Host", "www.zhihu.com");
+	                conn.setRequestProperty("User-Agent", USER_AGENT);
+	                conn.setRequestProperty("Referer", followeeListUrl);
+	                conn.setInstanceFollowRedirects(false);
+	                conn.setDoOutput(true);
+	                
+	                String params = "{\"offset\":" + offset +",\"order_by\":\"created\",\"hash_id\":\"9716adc74ed906724dbc8ffa9510cf68\"}";
+	                String post_params = "method=next&params="+params + "&_xsrf="+_xsrf;
+	                
+	                // Send post request
+	                DataOutputStream wr = new DataOutputStream(conn.getOutputStream());
+	                wr.writeBytes(post_params);wr.flush();wr.close();
 
-                int responseCode = conn.getResponseCode();
-                System.out.println("\nSending 'POST' request to URL : " + post_url);
-                System.out.println("Response Code : " + responseCode);
-                
-                if (responseCode != 200)
-                {
-                    System.out.println("��ҳ����");
-                    continue;
-                }
-                
-                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"));
-                String line;
-                StringBuffer response = new StringBuffer();
-                
-                while ((line = in.readLine()) != null)
-                {
-                    response.append(line);
-                }
-                
-                in.close();
-                
-                String content = response.toString().substring(17, response.toString().length()-3);
-                content = content.replace("\\\"", "\"");
-                content = content.replace("\\n", " ");
-                content = content.replace("\\/", "//");
-                content = content.replace("//", "/");
-                
-                document = Jsoup.parse(content);
-                Elements elements = document.select("div.zm-item-answer.zm-item-expanded");
-                
-                for (Element element2 : elements)
-                {
-                    String str = GetAnswerByElement(element2, true);
-                    WriteToFile(str);
-                }
-            }
-        }
-    }
+	                int responseCode = conn.getResponseCode();
+	                System.out.println("\nSending 'POST' request to URL : " + post_url);
+	                System.out.println("Response Code : " + responseCode);
+	                
+	                if (responseCode != 200)
+	                {
+	                    System.out.println("获取更多信息失败！");
+	                    continue;
+	                }
+	                
+	                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"));
+	                String line;
+	                StringBuffer response = new StringBuffer();
+	                
+	                while ((line = in.readLine()) != null)
+	                {
+	                    response.append(line);
+	                }
+	                
+	                in.close();
+	                
+	                String content = response.toString().substring(17, response.toString().length()-3);
+	                content = content.replace("\\\"", "\"");
+	                content = content.replace("\\n", " ");
+	                content = content.replace("\\/", "//");
+	                content = content.replace("//", "/");
+	                
+	                document = Jsoup.parse(content);
+	             
+	                Elements elements = document.select("div.zm-profile-card.zm-profile-section-item.zg-clear.no-hovercard");
+	                for (Element element2 : elements)
+	                {
+	                	String url = element2.getElementsByAttributeValue("class", "zm-list-content-title").first().getElementsByTag("a").first().attr("href");
+	                    followeeList.add(url);               
+	                }
+			}
+		}
+		
+		return followeeList;
+	}
     
-    // 根据element获取答案内容
-    private String GetAnswerByElement(Element element, boolean _unicode) throws Exception
+    public void SetAllInfo() throws Exception{
+      	String html = Crawler.GetPageContent(user_url, conn);
+      	Document doucDocument= Jsoup.parse(html);
+      	
+      	Element element=doucDocument.select("div.title-section.ellipsis").first().getElementsByClass("name").first();
+      	user_name = element.text();
+      	System.out.println(user_name);
+      	     	
+      	element = doucDocument.select("button.zg-btn.zg-btn-follow.zm-rich-follow-btn").first();
+      	user_ID = element.attr("data-id");
+      	System.out.println(user_ID);
+      	
+      	
+     	
+    }
+    public String GetUserName()throws Exception
     {
-        Element ele = element.getElementsByClass("author-link").first();
-        String author_link = "";
-        String author_name = "Anonymous";
-        if (ele != null)
-        {
-            author_link = "http://www.zhihu.com" + ele.attr("href");
-            author_name = ele.text();
-            
-            if (_unicode)
-            {
-                author_name = author_name.replace("\\", "\\\\");
-                Pattern p = Pattern.compile("(?<=\\\\u)\\w\\w\\w\\w");
-                Matcher m = p.matcher(author_name);
-                
-                while (m.find())
-                {
-//                    System.out.println(m.group());
-                    int hex_val = Integer.parseInt(m.group(), 16);
-                    String new_auth_name = "";
-                    new_auth_name += (char)hex_val;
-                    author_name = author_name.replaceFirst("\\\\u\\w\\w\\w\\w", new_auth_name);
-                }
-                
-                author_name = author_name.replace("\\", "");
-            }
-        }
+  
+        return user_name;
         
-        ele = element.getElementsByClass("zm-item-vote-info").first();
-        String vote_num = ele.attr("data-votecount");
         
-        ele = element.getElementsByClass("zm-editable-content").first();
-        String ans_content = ele.text();
-        if (_unicode)
-        {
-            ans_content = ans_content.replace("\\", "\\\\");
-            Pattern p = Pattern.compile("(?<=\\\\u)\\w\\w\\w\\w");
-            Matcher m = p.matcher(ans_content);
-            
-            while (m.find())
-            {
-//                System.out.println(m.group());
-                int hex_val = Integer.parseInt(m.group(), 16);
-                String new_auth_name = "";
-                new_auth_name += (char)hex_val;
-                ans_content = ans_content.replaceFirst("\\\\u\\w\\w\\w\\w", new_auth_name);
-            }
-            
-            ans_content = ans_content.replace("\\", "");
-        }
-        
-        String info = author_name + "(" + author_link + ")" + " ��ͬ��=" + vote_num + "\r\n" + ans_content + "\r\n\r\n";
-        
-        return info;
     }
     
-    // 写入文件
-    private void WriteToFile(String content) throws IOException
+    public String GetUserUrl()
     {
-        BufferedWriter out = new BufferedWriter(new FileWriter(writename, true));  
-        out.write(content);
-        out.flush();
-        out.close();
+        return user_url;
     }
     
-    // 获取答案数量
+    // 获取被赞同次数
+    public int GetAgreeNum()
+    {
+    	int num = 0;
+    	return num;
+       
+    }
+    
+    // 获取被感谢次数
+    public int GetThankNum()
+    {
+        int thank_num = 0;
+        
+        return thank_num;
+    }
+    
+    // 获取性别
+    public int GetGender()
+    {
+        int gender = 0;
+        
+        return gender;
+    }
+    
+    // 获取回答数量
     public int GetAnswerNum()
     {
-        Element element = document.getElementById("zh-question-answer-num");
-        return Integer.parseInt(element.text().split(" ")[0]);
+        int ans_num = 0;
+        
+        return ans_num;
+    }
+    
+    // 获取回答的url
+    public String[] GetAllAnswerUrls()
+    {
+        String[] urls = null;
+        
+        return urls;
+    }
+    
+    // 获取提问数量
+    public int GetAskNum()
+    {
+        int ask_num = 0;
+        
+        return ask_num;
+    }
+    
+    // 获取提问url
+    public String[] GetAllAskUrls()
+    {
+        String[] urls = null;
+        
+        return urls;
+    }
+    
+    // 获取关注者数量
+    public int GetFollowerNum()
+    {
+        int follower_num = 0;
+        
+        return follower_num;
+    }
+    
+    
+
+    
+    // 获取关注数量
+    public int GetFollowNum()
+    {
+        int follow_num = 0;
+        
+        return follow_num;
+    }
+    
+    // 获取被关注者信息
+    public UserInfo[] GetFollowsInfo()
+    {
+        UserInfo[] follows = null;
+        
+        return follows;
     }
 }
